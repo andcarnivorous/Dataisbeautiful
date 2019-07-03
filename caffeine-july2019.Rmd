@@ -1,0 +1,52 @@
+---
+title: "Dataisbeautiful July 2019"
+output: html_notebook
+---
+### Packages 
+
+```{r}
+library(gridExtra)
+library(ggplot2)
+```
+
+### Data manipulation
+
+Create a column of the percentage of caffeine per item, order the df by that variable and delete the first element (An outlier)
+```{r}
+coffee = read.csv("/home/main/Documents/coffee.csv")
+coffee$perc = (coffee$mg / 10) / coffee$tot
+coffee = coffee[order(-coffee$perc),]
+coffee = coffee[-c(1),]
+```
+
+Create a df of the mean percentages per group
+
+```{r}
+aggregated = aggregate(coffee$perc, list(coffee$what), mean)
+```
+
+create the 3 visualizations and then make a grid object with them.
+
+```{r}
+a = ggplot(aggregated, aes(x = reorder(Group.1, -x), y = x, fill = Group.1))+
+                  geom_bar(stat = "identity")+labs(fill = "Groups")+
+                  scale_y_continuous(labels = scales::percent_format(accuracy = 1))+
+                  xlab("Beverages")+ylab("Average Caffeine %")+
+                  ggtitle("Average Caffeine Percentage Per Beverage Type")+theme(legend.position = c(.9,.6))
+
+b = ggplot(coffee, aes(x = reorder(what, -perc), y = perc, fill = what))+
+          geom_boxplot()+xlab("Beverage Type")+
+          ylab("Caffeine % Per Drink")+
+          ggtitle("Caffeine % Distribution Per Beverage Type")+
+          scale_y_continuous(labels = scales::percent_format(accuracy = 1))+theme(legend.title = element_blank(), legend.position = "none") 
+
+c = ggplot(coffee, aes(x = reorder(Item, perc),y = perc,fill = what))+
+  geom_bar(stat = "identity", color = "sienna4", width= .75)+
+  coord_flip(ylim = c(0,.15))+xlab("Items")+ylab("Caffeine % per Item")+ggtitle("Percentage of Caffeine per Item")+
+  geom_text(aes(label = scales::percent(perc)), nudge_y = .009)+labs(fill = "Groups")+theme(axis.ticks.x = element_blank(), axis.text.x=element_blank(), axis.text.y = element_text(size=12, color = "black"), legend.position = c(.8,.25))
+
+
+gridExtra::grid.arrange(a,b,c, layout_matrix = rbind(c(3,1), c(3,2)))
+```
+
+
