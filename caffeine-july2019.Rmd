@@ -13,7 +13,7 @@ library(ggplot2)
 
 Create a column of the percentage of caffeine per item, order the df by that variable and delete the first element (An outlier)
 ```{r}
-coffee = read.csv("/home/main/Documents/coffee.csv")
+coffee = read.csv("coffee.csv")
 coffee$perc = (coffee$mg / 10) / coffee$tot
 coffee = coffee[order(-coffee$perc),]
 coffee = coffee[-c(1),]
